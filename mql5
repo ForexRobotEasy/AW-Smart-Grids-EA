@@ -1,0 +1,72 @@
+mql5
+//+------------------------------------------------------------------+
+//|                                             AW Smart Grids EA   |
+//|                                      Developer - Forex Robot Easy Team |
+//|                                            forexroboteasy.com  |
+//+------------------------------------------------------------------+
+
+#property strict
+
+input int MA_Period = 50;  // Moving Average period
+input double LotSize = 0.01;  // Lot size for each trade
+input double TakeProfit = 100.0;  // Take profit level
+input double StopLoss = 50.0;  // Stop loss level
+input int MaxOrders = 5;  // Maximum number of orders in the basket
+
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+void OnTick()
+{
+   int totalOrders = OrdersTotal();
+
+   if(totalOrders < MaxOrders)
+   {
+      double maValue = iMA(NULL, 0, MA_Period, 0, MODE_SMA, PRICE_CLOSE, 0);
+
+      double price = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+
+      if(price > maValue)
+      {
+         double entryPrice = NormalizeDouble(price, _Digits);
+         
+         int ticket = OrderSend(_Symbol, OP_BUY, LotSize, entryPrice, 3, entryPrice - StopLoss * _Point, entryPrice + TakeProfit * _Point, 'AW Smart Grids EA', 0, 0, Green);
+         
+         if(ticket > 0)
+         {
+            Print('Buy order placed successfully');
+         }
+         else
+         {
+            Print('Buy order failed with error code ', GetLastError());
+         }
+      }
+      else if(price < maValue)
+      {
+         double entryPrice = NormalizeDouble(price, _Digits);
+         
+         int ticket = OrderSend(_Symbol, OP_SELL, LotSize, entryPrice, 3, entryPrice + StopLoss * _Point, entryPrice - TakeProfit * _Point, 'AW Smart Grids EA', 0, 0, Red);
+         
+         if(ticket > 0)
+         {
+            Print('Sell order placed successfully');
+         }
+         else
+         {
+            Print('Sell order failed with error code ', GetLastError());
+         }
+      }
+   }
+   else
+   {
+      Print('Maximum number of orders reached');
+   }
+}
+
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+void OnDeinit(const int reason)
+{
+   Print('AW Smart Grids EA deactivated');
+}
